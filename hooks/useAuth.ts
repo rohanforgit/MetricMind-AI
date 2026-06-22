@@ -4,66 +4,23 @@ import { createClientSideClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClientSideClient();
-  const router = useRouter();
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function getInitialSession() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (isMounted) {
-          setUser(session?.user ?? null);
-        }
-      } catch (err) {
-        console.error("Error retrieving initial auth session:", err);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    getInitialSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (isMounted) {
-          setUser(session?.user ?? null);
-          setLoading(false);
-          if (event === "SIGNED_OUT") {
-            router.push("/login");
-            router.refresh();
-          }
-        }
-      }
-    );
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [supabase, router]);
+  const user: any = {
+    id: "00000000-0000-0000-0000-000000000000",
+    email: "guest@metricmind.ai",
+    user_metadata: {
+      full_name: "Guest User",
+    },
+  };
 
   const signOut = async () => {
-    setLoading(true);
-    try {
-      await supabase.auth.signOut();
-      router.push("/login");
-      router.refresh();
-    } catch (err) {
-      console.error("Error signing out:", err);
-      setLoading(false);
-    }
+    // Direct redirect back to dashboard since auth is bypassed
+    window.location.href = "/";
   };
 
   return {
     user,
-    loading,
+    loading: false,
     signOut,
-    supabase,
+    supabase: null as any,
   };
 }
